@@ -25,7 +25,7 @@ def generateMonths(athleteId, subscriptionId, startDate, cancelDate):
         generatedData.extend(generateMonths(athleteId, subscriptionId, endDate.replace(hour=0,minute=0,second=0),
                                     cancelDate))
     else:
-        element.update(startDate=startDate, endDate=endDate.replace(hour=23,minute=59,second=59)) # Replace with End Date to complete billing cycle
+        element.update(startDate=startDate, endDate=endDate.replace(hour=23,minute=59,second=59)+ relativedelta(days=-1)) # Replace with End Date to complete billing cycle
         generatedData.append(element)
     return generatedData
 	
@@ -66,32 +66,50 @@ previousAthleteId = -1
 startDate = datetime.date.today()
 endDate = datetime.date.today()
 tempCache = list()
+tempResult = list()
 for record in cursor:
     athleteId = record[0]
     if athleteId == previousAthleteId:
-        if record[5] == 'canceled':
-            endDate = (record[8] if not record[8]
-                       is None else record[4])
-            tempCache.extend(generateMonths(record[0], record[1], startDate,
-                             endDate))
-        elif record[5] == 'current':
+        if record[5] == 'current':
             endDate = (record[8] if not record[8]
                        is None else datetime.datetime(2017,1,31,0,0,0,))
-            tempCache.extend(generateMonths(record[0], record[1], startDate,
-                             endDate))
+            if endDate > previousEndDate:
+                tempCache.extend(generateMonths(record[0], record[1],
+                                 previousEndDate
+                                 + relativedelta(seconds=1), endDate))
+        else:
+            endDate = (record[8] if not record[8]
+                       is None else record[4])
+            if endDate > previousEndDate:
+                if record[3] > previousEndDate:
+                    tempResult = generateMonths(record[0], record[1],
+                            record[3], endDate)
+                    tempCache.extend(tempResult)
+                else:
+                    tempResult = generateMonths(record[0], record[1],
+                            previousEndDate + relativedelta(seconds=1),
+                            endDate)
+                    tempCache.extend(tempResult)
+                previousEndDate = tempResult[-1]['endDate']
     elif record[5] == 'canceled':
         previousAthleteId = athleteId
         endDate = (record[8] if not record[8] is None else record[4])
-        tempCache.extend(generateMonths(record[0], record[1], record[3], endDate))
+        tempResult = generateMonths(record[0], record[1], record[3],
+                                    endDate)
+        previousEndDate = tempResult[-1]['endDate']
+        tempCache.extend(tempResult)
     elif record[5] == 'current':
         previousAthleteId = athleteId
         endDate = (record[8] if not record[8]
                    is None else datetime.datetime(2017,1,31,0,0,0,))
-        tempCache.extend(generateMonths(record[0], record[1], record[3], endDate))
+        tempCache.extend(generateMonths(record[0], record[1],
+                         record[3], endDate))
     else:
         previousAthleteId = athleteId
-        startDate = record[3]
-        endDate = record[4]
+        tempResult = generateMonths(record[0], record[1], record[3],
+                                    record[4])
+        previousEndDate = tempResult[-1]['endDate']
+        tempCache.extend(tempResult)
 
 
 count = 0

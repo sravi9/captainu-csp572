@@ -207,6 +207,21 @@ COMMIT;
 
 \copy captainu.emails FROM '/home/ec2-user/Emails.csv' WITH DELIMITER ',' NULL 'NULL' CSV HEADER ESCAPE '\';
 
+DROP TABLE IF EXISTS captainu.hits CASCADE;
+
+CREATE TABLE captainu.hits
+(
+   athlete_id  integer,
+   hit_date    timestamp,
+   hit_type    varchar(32)
+);
+
+COMMIT;
+
+\copy captainu.hits FROM '/home/ec2-user/hits1.csv' WITH DELIMITER ',' NULL 'NULL' CSV HEADER ESCAPE '\';
+\copy captainu.hits FROM '/home/ec2-user/hits2.csv' WITH DELIMITER ',' NULL 'NULL' CSV HEADER ESCAPE '\';
+\copy captainu.hits FROM '/home/ec2-user/hits3.csv' WITH DELIMITER ',' NULL 'NULL' CSV HEADER ESCAPE '\';
+\copy captainu.hits FROM '/home/ec2-user/hits4.csv' WITH DELIMITER ',' NULL 'NULL' CSV HEADER ESCAPE '\';
 
 CREATE ROLE readonly LOGIN PASSWORD 're@d0n!y';
 GRANT CONNECT ON DATABASE chunkdb TO readonly;
