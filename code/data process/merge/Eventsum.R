@@ -1,0 +1,36 @@
+events<-read.csv('C:/Users/sshss-pc/Desktop/project/CaptainU/athlete_events.csv', header = TRUE)
+sumevents<-function(df){
+  row<-nrow(df)
+  result<-data.frame(rep(NA,row),rep(NA,row),rep(NA,row))
+  names(result)<-c("Athlete_id","Sum","Lastupdate")
+  result[1,1]<-df[1,1]
+  result[1,2]<-0
+  result[1,3]<-"Null"
+  current<-1
+  for(n in 2:row){
+    if(df[n,1]==df[n-1,1]){
+      result[current,2]<-result[current,2]+1
+      x<-as.POSIXct(df[n,4])
+      y<-as.POSIXct(df[n-1,4])
+      if(x>y){
+        result[current,3]<-as.character(df[n,4])
+      }
+    }
+    if(df[n,1]!=df[n-1,1]){
+      current<-current+1
+      result[current,1]<-df[n,1]
+      if(df[n,2]=="NULL"){
+        result[current,2]<-0
+        result[current,3]<-"Null"
+      }
+      if(df[n,2]!="NULL"){
+        result[current,2]<-1
+        result[current,3]<-as.character(df[n,4])
+      }
+    }
+  }
+  return(result)
+}
+eventsum<-sumevents(events)
+eventsum<-eventsum[1:332699,]
+write.csv(eventsum,"C:/Users/sshss-pc/Desktop/eventsum.csv")

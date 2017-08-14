@@ -1,0 +1,37 @@
+relations<-read.csv('C:/Users/sshss-pc/Desktop/project/CaptainU/Relations.csv', header = TRUE)
+sumrelations<-function(df){
+  row<-nrow(df)
+  result<-data.frame(rep(NA,row),rep(NA,row),rep(NA,row))
+  names(result)<-c("Athlete_id","Ralations","update")
+  result[1,1]<-df[1,3]
+  result[1,2]<-0
+  result[1,3]<-as.character(df[1,7])
+  current<-1
+  for(n in 2:row){
+    if(df[n,3]==df[n-1,3]&&df[n,5]=="parent"){
+      result[current,2]<-1
+      x<-as.POSIXct(df[n,7])
+      y<-as.POSIXct(df[n-1,7])
+      if(x>y){
+        result[current,3]<-as.character(df[n,7])
+      }
+    }
+    if(df[n,3]!=df[n-1,3]){
+      current<-current+1
+      if(df[n,5]=="athlete"){
+        result[current,1]<-df[n,3]
+        result[current,2]<-0
+        result[current,3]<-as.character(df[n,7])
+      }
+      if(df[n,5]=="parent"){
+        result[current,1]<-df[n,3]
+        result[current,2]<-1
+        result[current,3]<-as.character(df[n,7])
+      }
+    }
+  }
+  return(result)
+}
+relationsum<-sumrelations(relations)
+relationsum<-relationsum[1:332632,]
+write.csv(relationsum,"C:/Users/sshss-pc/Desktop/relationsum.csv")

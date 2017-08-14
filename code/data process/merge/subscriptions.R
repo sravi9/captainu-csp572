@@ -1,0 +1,47 @@
+subscriptions<-read.csv('C:/Users/sshss-pc/Desktop/project/CaptainU/subscriptions.csv', header = TRUE)
+sumsubscriptions<-function(df){
+  row<-nrow(df)
+  result<-data.frame(rep(NA,row),rep(NA,row),rep(NA,row),rep(NA,row),rep(NA,row),rep(NA,row))
+  names(result)<-c("Athlete_id","Everpaid","Paidplan","Current","update","Underpromotion")
+  result[1,1]<-df[1,1]
+  result[1,2]<-0
+  result[1,3]<-df[1,3]
+  result[1,4]<-df[1,3]
+  result[1,5]<-as.character(df[1,5])
+  result[1,6]<-df[1,8]
+  current<-1
+  for(n in 2:row){
+    if(df[n,1]==df[n-1,1]){
+      if(df[n,3]<3&&df[n-1,6]=="upgraded"){
+        result[current,2]<-1
+      }
+      if(df[n,3]<result[current,3]){
+        result[current,3]<-df[n,3]
+      }
+      if(df[n,6]=="current"){
+        result[current,4]<-df[n,3]
+      }
+      if(df[n,8]==1){
+        result[current,6]<-1
+      }
+      x<-as.POSIXct(df[n,5])
+      y<-as.POSIXct(df[n-1,5])
+      if(x>y){
+        result[current,5]<-as.character(df[n,5])
+      }
+    }
+    if(df[n,1]!=df[n-1,1]){
+      current<-current+1
+      result[current,1]<-df[n,1]
+      result[current,2]<-0
+      result[current,3]<-df[n,3]
+      result[current,4]<-df[n,3]
+      result[current,5]<-as.character(df[n,5])
+      result[current,6]<-df[n,8]
+    }
+  }
+  return(result)
+}
+subscriptionsum<-sumsubscriptions(subscriptions)
+subscriptionsum<-subscriptionsum[1:332699,]
+write.csv(subscriptionsum,"C:/Users/sshss-pc/Desktop/subscriptionsum.csv")
